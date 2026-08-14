@@ -1,0 +1,43 @@
+# Binaries
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test / debug
+*.test
+*.prof
+*.out
+*.log
+dlv
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment (local config)
+.env
+
+# Swagger generated output (regenerated with `make swagger`)
+docs/swagger/docs.go
+docs/swagger/swagger.json
+docs/swagger/swagger.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes (local dev)
+mysql_data_dev/
+redis_data_dev/
+
+# claude code context
+CLAUDE.md
