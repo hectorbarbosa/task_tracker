@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -35,6 +35,7 @@ type Server struct {
 	httpServer *http.Server
 	db         *sql.DB
 	rdb        *redis.Client
+	logger     *slog.Logger
 }
 
 // New constructs the server with all routes registered.
@@ -42,6 +43,9 @@ func New(cfg *config.Config) (*Server, error) {
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
+	// Initialize structured logger
+	logger := middleware.NewLogger(cfg.Server.Env)
 
 	// Open database connection
 	db, err := sql.Open("mysql", cfg.Database.DSN())
@@ -90,7 +94,8 @@ func New(cfg *config.Config) (*Server, error) {
 
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(requestLogger())
+	router.Use(middleware.RequestID())
+	router.Use(middleware.RequestLogger(logger))
 
 	// Custom validator: surface binding errors with field names.
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -152,6 +157,7 @@ func New(cfg *config.Config) (*Server, error) {
 		httpServer: httpServer,
 		db:         db,
 		rdb:        rdb,
+		logger:     logger,
 	}, nil
 }
 
@@ -160,7 +166,10 @@ func New(cfg *config.Config) (*Server, error) {
 func (s *Server) Run() error {
 	errCh := make(chan error, 1)
 	go func() {
-		log.Printf("starting server on %s (env=%s)", s.httpServer.Addr, s.cfg.Server.Env)
+		s.logger.Info("starting server",
+			slog.String("addr", s.httpServer.Addr),
+			slog.String("env", s.cfg.Server.Env),
+		)
 		if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err
 		}
@@ -172,7 +181,7 @@ func (s *Server) Run() error {
 
 	select {
 	case sig := <-quit:
-		log.Printf("received signal %v, shutting down", sig)
+		s.logger.Info("received signal, shutting down", slog.String("signal", sig.String()))
 	case err := <-errCh:
 		return err
 	}
@@ -187,28 +196,13 @@ func (s *Server) Run() error {
 
 	// Close database connection
 	if err := s.db.Close(); err != nil {
-		log.Printf("error closing database: %v", err)
+		s.logger.Error("error closing database", slog.Any("error", err))
 	}
 
 	// Close Redis connection
 	if err := s.rdb.Close(); err != nil {
-		log.Printf("error closing redis: %v", err)
+		s.logger.Error("error closing redis", slog.Any("error", err))
 	}
 
 	return nil
-}
-
-// requestLogger is a minimal structured request logger.
-// TODO: replace with a proper structured logger (zerolog / zap / slog).
-func requestLogger() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		log.Printf("%s %s %d %s",
-			c.Request.Method,
-			c.Request.URL.Path,
-			c.Writer.Status(),
-			time.Since(start),
-		)
-	}
 }

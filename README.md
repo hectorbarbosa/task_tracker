@@ -63,7 +63,7 @@ docker compose up --build       # or: make docker-up
 docker compose down             # or: make docker-down
 ```
 
-`api` контейнер перед запуском ждет стартовавших `mysql` и `redus`.
+`api` контейнер перед запуском ждет стартовавших `mysql` и `redis`.
 
 ## Migrations
 

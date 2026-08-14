@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"log/slog"
+	"os"
 
 	"task_tracker/internal/config"
 	"task_tracker/internal/server"
@@ -25,10 +26,12 @@ func main() {
 
 	srv, err := server.New(cfg)
 	if err != nil {
-		log.Fatalf("failed to create server: %v", err)
+		slog.Error("failed to create server", slog.Any("error", err))
+		os.Exit(1)
 	}
 
 	if err := srv.Run(); err != nil {
-		log.Fatalf("server error: %v", err)
+		slog.Error("server error", slog.Any("error", err))
+		os.Exit(1)
 	}
 }
