@@ -28,7 +28,7 @@ build:
 
 .PHONY: run
 run: build
-	$(BIN)
+	if [ -f .env ]; then export $$(cat .env | grep -v '^#' | xargs); fi; $(BIN)
 
 .PHONY: clean
 clean:
@@ -81,7 +81,7 @@ dev-down:
 # Requires: go install github.com/go-delve/delve/cmd/dlv@latest
 .PHONY: debug
 debug:
-	dlv debug $(CMD_PATH)
+	if [ -f .env ]; then export $$(cat .env | grep -v '^#' | xargs); fi; dlv debug $(CMD_PATH)
 
 # ─── Docker Compose ───────────────────────────────────────────────────────────
 .PHONY: docker-up

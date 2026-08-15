@@ -11,7 +11,8 @@ func NewLogger(env string) *slog.Logger {
 	var handler slog.Handler
 
 	opts := &slog.HandlerOptions{
-		Level: slog.LevelInfo,
+		Level:     slog.LevelInfo,
+		AddSource: true, // Adds file name and line number (like zap)
 	}
 
 	if env == "development" {

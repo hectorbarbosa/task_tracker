@@ -28,7 +28,7 @@ type DatabaseConfig struct {
 
 // DSN returns a MySQL DSN for go-sql-driver/mysql.
 func (d DatabaseConfig) DSN() string {
-	return d.User + ":" + d.Password + "@tcp(" + d.Host + ":" + d.Port + ")/" + d.Name + "?parseTime=true&charset=utf8mb4"
+	return d.User + ":" + d.Password + "@tcp(" + d.Host + ":" + d.Port + ")/" + d.Name + "?parseTime=true&charset=utf8mb4&timeout=10s&readTimeout=10s&writeTimeout=10s"
 }
 
 type RedisConfig struct {

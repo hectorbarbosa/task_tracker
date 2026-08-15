@@ -54,7 +54,7 @@ func New(cfg *config.Config) (*Server, error) {
 	}
 
 	// Ping database to verify connection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func New(cfg *config.Config) (*Server, error) {
 	})
 
 	// Ping Redis to verify connection
-	ctx2, cancel2 := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel2()
 	if err := rdb.Ping(ctx2).Err(); err != nil {
 		return nil, err
