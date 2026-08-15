@@ -75,15 +75,6 @@ func (s *TeamService) InviteUser(ctx context.Context, teamID, inviterID int64, i
 		return nil, errors.New("user not found")
 	}
 
-	// Check if user is already a member
-	isMember, err := s.teamRepo.IsUserMember(ctx, teamID, user.ID)
-	if err != nil {
-		return nil, err
-	}
-	if isMember {
-		return nil, errors.New("user is already a member of this team")
-	}
-
 	// Prevent assigning owner role via invitation
 	if input.Role == model.RoleOwner {
 		return nil, errors.New("cannot assign owner role via invitation")
@@ -94,8 +85,8 @@ func (s *TeamService) InviteUser(ctx context.Context, teamID, inviterID int64, i
 		return nil, errors.New("admin cannot modify owner")
 	}
 
-	// Add user to team
-	if err := s.teamRepo.AddTeamMember(ctx, teamID, user.ID, input.Role); err != nil {
+	// Add user to team atomically (checks membership and inserts in transaction)
+	if err := s.teamRepo.InviteUser(ctx, teamID, user.ID, input.Role); err != nil {
 		return nil, err
 	}
 

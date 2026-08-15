@@ -151,6 +151,55 @@ func (r *TeamRepository) UpdateMemberRole(ctx context.Context, teamID, userID in
 	return err
 }
 
+// InviteUser adds a user to a team with the specified role in an atomic transaction.
+// Returns error if user is already a member or if team doesn't exist.
+func (r *TeamRepository) InviteUser(ctx context.Context, teamID, userID int64, role model.Role) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// Lock the team row to prevent concurrent modifications
+	teamQuery := `
+		SELECT id FROM teams WHERE id = ? FOR UPDATE
+	`
+	var teamExists int
+	err = tx.QueryRowContext(ctx, teamQuery, teamID).Scan(&teamExists)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return errors.New("team not found")
+		}
+		return err
+	}
+
+	// Check if user is already a member (with lock)
+	checkQuery := `
+		SELECT COUNT(*) FROM team_members
+		WHERE team_id = ? AND user_id = ? FOR UPDATE
+	`
+	var count int
+	err = tx.QueryRowContext(ctx, checkQuery, teamID, userID).Scan(&count)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("user is already a member of this team")
+	}
+
+	// Add user to team
+	insertQuery := `
+		INSERT INTO team_members (team_id, user_id, role)
+		VALUES (?, ?, ?)
+	`
+	_, err = tx.ExecContext(ctx, insertQuery, teamID, userID, role)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 // IsUserMember checks if a user is a member of a team.
 func (r *TeamRepository) IsUserMember(ctx context.Context, teamID, userID int64) (bool, error) {
 	query := `
