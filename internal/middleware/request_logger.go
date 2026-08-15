@@ -37,7 +37,6 @@ func RequestLogger(logger *slog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
 
 		// Process request
 		c.Next()
@@ -45,26 +44,15 @@ func RequestLogger(logger *slog.Logger) gin.HandlerFunc {
 		// Calculate latency
 		latency := time.Since(start)
 
-		// Get request ID from context
-		requestID, _ := c.Get(string(CtxRequestID))
-
 		// Get user ID if authenticated
 		userID, _ := c.Get(string(CtxUserID))
 
-		// Build structured log entry
+		// Build structured log entry with essential fields only
 		fields := []any{
 			slog.String("method", c.Request.Method),
 			slog.String("path", path),
 			slog.Int("status", c.Writer.Status()),
 			slog.Duration("latency", latency),
-			slog.String("client_ip", c.ClientIP()),
-			slog.String("user_agent", c.Request.UserAgent()),
-			slog.Any("request_id", requestID),
-		}
-
-		// Add query if present
-		if query != "" {
-			fields = append(fields, slog.String("query", query))
 		}
 
 		// Add user ID if authenticated
@@ -76,9 +64,6 @@ func RequestLogger(logger *slog.Logger) gin.HandlerFunc {
 		if len(c.Errors) > 0 {
 			fields = append(fields, slog.String("error", c.Errors.ByType(gin.ErrorTypePrivate).String()))
 		}
-
-		// Add response size
-		fields = append(fields, slog.Int("bytes", c.Writer.Size()))
 
 		// Log based on status code
 		status := c.Writer.Status()

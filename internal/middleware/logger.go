@@ -12,7 +12,7 @@ func NewLogger(env string) *slog.Logger {
 
 	opts := &slog.HandlerOptions{
 		Level:     slog.LevelInfo,
-		AddSource: true, // Adds file name and line number (like zap)
+		AddSource: false, // Remove file/line info for cleaner output
 	}
 
 	if env == "development" {
