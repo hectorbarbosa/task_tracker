@@ -11,7 +11,7 @@ func NewLogger(env string) *slog.Logger {
 	var handler slog.Handler
 
 	opts := &slog.HandlerOptions{
-		Level:     slog.LevelInfo,
+		Level:     slog.LevelDebug,
 		AddSource: false, // Remove file/line info for cleaner output
 	}
 

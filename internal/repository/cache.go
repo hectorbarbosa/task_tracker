@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -13,12 +14,16 @@ import (
 
 // CacheRepository provides Redis caching for task lists.
 type CacheRepository struct {
-	rdb *redis.Client
+	rdb    *redis.Client
+	logger *slog.Logger
 }
 
 // NewCacheRepository creates a new CacheRepository.
-func NewCacheRepository(rdb *redis.Client) *CacheRepository {
-	return &CacheRepository{rdb: rdb}
+func NewCacheRepository(rdb *redis.Client, logger *slog.Logger) *CacheRepository {
+	return &CacheRepository{
+		rdb:    rdb,
+		logger: logger,
+	}
 }
 
 // CacheTTL is the time-to-live for cached task lists.
@@ -48,24 +53,29 @@ func buildCacheKey(filter model.TaskFilter) string {
 }
 
 // GetTaskList retrieves cached task list for the given filter.
-// Returns nil if not found in cache.
-func (r *CacheRepository) GetTaskList(ctx context.Context, filter model.TaskFilter) ([]model.Task, error) {
+// Returns (tasks, true, nil) on cache hit (tasks may be empty),
+// (nil, false, nil) on cache miss, and (nil, false, err) on Redis error.
+func (r *CacheRepository) GetTaskList(ctx context.Context, filter model.TaskFilter) ([]model.Task, bool, error) {
 	key := buildCacheKey(filter)
 
 	data, err := r.rdb.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
-			return nil, nil // Cache miss
+			r.logger.Debug("cache miss", slog.String("key", key))
+			return nil, false, nil // Cache miss
 		}
-		return nil, err
+		r.logger.Error("cache get error", slog.String("key", key), slog.Any("error", err))
+		return nil, false, err
 	}
 
 	var tasks []model.Task
 	if err := json.Unmarshal([]byte(data), &tasks); err != nil {
-		return nil, err
+		r.logger.Error("cache unmarshal error", slog.String("key", key), slog.Any("error", err))
+		return nil, false, err
 	}
 
-	return tasks, nil
+	r.logger.Debug("cache hit", slog.String("key", key), slog.Int("task_count", len(tasks)))
+	return tasks, true, nil
 }
 
 // SetTaskList caches task list for the given filter.
@@ -74,10 +84,17 @@ func (r *CacheRepository) SetTaskList(ctx context.Context, filter model.TaskFilt
 
 	data, err := json.Marshal(tasks)
 	if err != nil {
+		r.logger.Error("cache marshal error", slog.String("key", key), slog.Any("error", err))
 		return err
 	}
 
-	return r.rdb.Set(ctx, key, data, CacheTTL).Err()
+	if err := r.rdb.Set(ctx, key, data, CacheTTL).Err(); err != nil {
+		r.logger.Error("cache set error", slog.String("key", key), slog.Any("error", err))
+		return err
+	}
+
+	r.logger.Debug("cache set", slog.String("key", key), slog.Int("task_count", len(tasks)))
+	return nil
 }
 
 // InvalidateTeamTasks invalidates all cached task lists for a team.
@@ -89,20 +106,26 @@ func (r *CacheRepository) InvalidateTeamTasks(ctx context.Context, teamID int64)
 	// Also invalidate the base key (without filters)
 	baseKey := fmt.Sprintf("tasks:%d", teamID)
 	if err := r.rdb.Del(ctx, baseKey).Err(); err != nil {
+		r.logger.Error("cache invalidate error", slog.Int64("team_id", teamID), slog.Any("error", err))
 		return err
 	}
 
 	// Find and delete all matching keys
+	deletedCount := 0
 	iter := r.rdb.Scan(ctx, 0, pattern, 100).Iterator()
 	for iter.Next(ctx) {
 		if err := r.rdb.Del(ctx, iter.Val()).Err(); err != nil {
+			r.logger.Error("cache invalidate error", slog.String("key", iter.Val()), slog.Any("error", err))
 			return err
 		}
+		deletedCount++
 	}
 
 	if err := iter.Err(); err != nil {
+		r.logger.Error("cache scan error", slog.Int64("team_id", teamID), slog.Any("error", err))
 		return err
 	}
 
+	r.logger.Debug("cache invalidated", slog.Int64("team_id", teamID), slog.Int("deleted_keys", deletedCount+1))
 	return nil
 }

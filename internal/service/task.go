@@ -88,12 +88,12 @@ func (s *TaskService) ListTasks(ctx context.Context, filter model.TaskFilter, us
 	}
 
 	// Try to get from cache first
-	cachedTasks, err := s.cacheRepo.GetTaskList(ctx, filter)
+	cachedTasks, ok, err := s.cacheRepo.GetTaskList(ctx, filter)
 	if err != nil {
 		// Log error but continue with DB query
 		// Cache errors should not break functionality
-	} else if cachedTasks != nil {
-		// Cache hit
+	} else if ok {
+		// Cache hit (may be empty slice — that's a valid result)
 		return cachedTasks, nil
 	}
 

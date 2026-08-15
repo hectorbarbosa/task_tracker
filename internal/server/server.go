@@ -83,7 +83,7 @@ func New(cfg *config.Config) (*Server, error) {
 	taskRepo := repository.NewTaskRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
 	statsRepo := repository.NewStatsRepository(db)
-	cacheRepo := repository.NewCacheRepository(rdb)
+	cacheRepo := repository.NewCacheRepository(rdb, logger)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, cfg.JWT.Secret, cfg.JWT.Expiration)
