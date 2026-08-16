@@ -3,14 +3,16 @@ package config
 import (
 	"os"
 	"strconv"
+	"time"
 )
 
 // Config holds all application configuration.
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	Redis    RedisConfig
-	JWT      JWTConfig
+	Server    ServerConfig
+	Database  DatabaseConfig
+	Redis     RedisConfig
+	JWT       JWTConfig
+	RateLimit RateLimitConfig
 }
 
 type ServerConfig struct {
@@ -46,6 +48,13 @@ type JWTConfig struct {
 	Expiration int // hours
 }
 
+// RateLimitConfig controls the Redis-backed fixed-window rate limiter.
+type RateLimitConfig struct {
+	Enabled bool
+	Limit   int           // max requests per window
+	Window  time.Duration // window duration
+}
+
 // Load reads configuration from environment variables with sensible defaults
 // for local development (matching docker-compose.dev.yml + .env).
 func Load() *Config {
@@ -69,6 +78,11 @@ func Load() *Config {
 			Secret:     getEnv("JWT_SECRET", "dev-secret-change-me"),
 			Expiration: getEnvInt("JWT_EXPIRATION_HOURS", 24),
 		},
+		RateLimit: RateLimitConfig{
+			Enabled: getEnvBool("RATE_LIMIT_ENABLED", true),
+			Limit:   getEnvInt("RATE_LIMIT_REQUESTS", 60),
+			Window:  time.Duration(getEnvInt("RATE_LIMIT_WINDOW_SECONDS", 60)) * time.Second,
+		},
 	}
 }
 
@@ -83,6 +97,15 @@ func getEnvInt(key string, def int) int {
 	if v, ok := os.LookupEnv(key); ok && v != "" {
 		if i, err := strconv.Atoi(v); err == nil {
 			return i
+		}
+	}
+	return def
+}
+
+func getEnvBool(key string, def bool) bool {
+	if v, ok := os.LookupEnv(key); ok && v != "" {
+		if b, err := strconv.ParseBool(v); err == nil {
+			return b
 		}
 	}
 	return def

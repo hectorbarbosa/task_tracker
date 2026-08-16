@@ -111,7 +111,8 @@ Key variables:
 ## Testing
 
 ```bash
-make test-integration         # unit + integration tests (обязательный интеграционный тест) 
+make test                     # unit + integration + rate limiter tests (все тесты) 
+make test-integration         # integration tests (обязательный интеграционный тест) 
 make test-access              # unit access rights (опциональный тест прав доступа)  
 ```
 

@@ -97,6 +97,12 @@ func New(cfg *config.Config) (*Server, error) {
 	router.Use(middleware.RequestID())
 	router.Use(middleware.RequestLogger(logger))
 
+	// Rate limiter (applied to all routes if enabled).
+	if cfg.RateLimit.Enabled {
+		rateLimiter := middleware.NewRateLimiter(rdb, cfg.RateLimit.Limit, cfg.RateLimit.Window, logger)
+		router.Use(rateLimiter.Limit())
+	}
+
 	// Custom validator: surface binding errors with field names.
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		_ = v // available for custom registrations
