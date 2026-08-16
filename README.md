@@ -352,19 +352,3 @@ http://localhost:8080/swagger/index.html
 ```bash
 make swagger
 ```
-
-## TODO (implementation checklist)
-
-From the spec — what still needs to be filled in:
-
-- [ ] JWT middleware in `internal/middleware/auth.go`
-- [ ] DB connection + Redis client in `internal/server/server.go`
-- [ ] Registration + login (password hashing with bcrypt)
-- [ ] Team creation as atomic transaction (team + owner membership)
-- [ ] Role-based access checks in service layer
-- [ ] Task CRUD with optimistic locking (`version` column) and history recording
-- [ ] Redis task-list cache (TTL 5m, filter-aware, invalidate on write)
-- [ ] Stats query as a single CTE with JOINs / GROUP BY / aggregates
-- [ ] Swagger annotations + UI mount
-- [ ] Integration test for `/teams/:team_id/stats`
-- [ ] README examples for each endpoint
