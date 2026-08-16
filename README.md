@@ -37,7 +37,7 @@ docker-compose.dev.yml    Infra only (mysql + redis) — for local dev
 ## Quick start (local development)
 
 Рекомендованный воркфлоу: запустите MySQL + Redis в Докере, запустите Go app 
-локально, чтобы запустить Delve / IDE debuggers. Смотри секцию Debugging ниже.
+локально. 
 
 ```bash
 # 1. Start infra
@@ -48,8 +48,6 @@ make migrate-up
 
 # 3. Run the app
 make run
-# ...or, with breakpoints:
-make debug
 ```
 
 API будет доступно на URL: http://localhost:8080. Health check: `GET /health`.
@@ -62,7 +60,6 @@ API будет доступно на URL: http://localhost:8080. Health check: `
 docker compose up --build       # or: make docker-up
 docker compose down             # or: make docker-down
 ```
-
 `api` контейнер перед запуском ждет стартовавших `mysql` и `redis`.
 
 ## Migrations
@@ -111,29 +108,12 @@ Key variables:
 | `JWT_SECRET` | `dev-secret-change-me` | **Change in production** |
 | `JWT_EXPIRATION_HOURS` | `24` | Token lifetime |
 
-## Debugging
-
-The hybrid setup — Docker for infra, Go app native — is the fastest path:
-
-- **Breakpoints**: `make debug` launches Delve. Set breakpoints in your IDE or
-  the Delve CLI.
-- **Edit-compile-run**: ~1s with `go run ./cmd/api` or Delve's `restart`.
-- **No ptrace issues**: running natively avoids the `--security-opt` dance
-  required to debug inside a container.
-
-Switch to the full `docker compose up` only at the end to verify the
-deliverable — the reviewer will run that command.
-
 ## Testing
 
 ```bash
-make test              # unit + integration tests
-make test-race         # same, with -race detector
+make test-integration         # unit + integration tests (обязательный интеграционный тест) 
+make test-access              # unit access rights (опциональный тест прав доступа)  
 ```
-
-The spec requires at least one integration test for the `/teams/:team_id/stats`
-endpoint. Place it in `internal/repository/stats_test.go` or
-`internal/service/stats_test.go`.
 
 ## API Usage Examples
 
