@@ -6,21 +6,21 @@ import (
 	"time"
 
 	"task_tracker/internal/model"
-	"task_tracker/internal/repository"
+	"task_tracker/internal/repository" // only for ErrVersionMismatch
 )
 
 // TaskService handles task CRUD and history.
 type TaskService struct {
-	taskRepo  *repository.TaskRepository
-	teamRepo  *repository.TeamRepository
-	cacheRepo *repository.CacheRepository
+	taskRepo  taskStore
+	teamRepo  teamStore
+	cacheRepo cacheStore
 }
 
 // NewTaskService creates a new TaskService.
 func NewTaskService(
-	taskRepo *repository.TaskRepository,
-	teamRepo *repository.TeamRepository,
-	cacheRepo *repository.CacheRepository,
+	taskRepo taskStore,
+	teamRepo teamStore,
+	cacheRepo cacheStore,
 ) *TaskService {
 	return &TaskService{
 		taskRepo:  taskRepo,

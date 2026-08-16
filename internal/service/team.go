@@ -5,17 +5,16 @@ import (
 	"errors"
 
 	"task_tracker/internal/model"
-	"task_tracker/internal/repository"
 )
 
 // TeamService handles team management and invitations.
 type TeamService struct {
-	teamRepo *repository.TeamRepository
-	userRepo *repository.UserRepository
+	teamRepo teamStore
+	userRepo userStore
 }
 
 // NewTeamService creates a new TeamService.
-func NewTeamService(teamRepo *repository.TeamRepository, userRepo *repository.UserRepository) *TeamService {
+func NewTeamService(teamRepo teamStore, userRepo userStore) *TeamService {
 	return &TeamService{
 		teamRepo: teamRepo,
 		userRepo: userRepo,

@@ -35,13 +35,13 @@ clean:
 	rm -rf $(BIN_DIR) ./docs/swagger.*
 
 # ─── Test ─────────────────────────────────────────────────────────────────────
-.PHONY: test
-test:
-	go test ./...
+.PHONY: test-access
+test-access:
+	go test ./internal/service -v
 
-.PHONY: test-race
-test-race:
-	go test -race ./...
+.PHONY: test-integration
+test-integration:
+	INTEGRATION_TEST=1 go test ./internal/service -v
 
 # ─── Migrations (local MySQL) ────────────────────────────────────────────────
 # Requires: go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@latest

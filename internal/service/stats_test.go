@@ -166,10 +166,11 @@ func createTestData(t *testing.T, db *sql.DB) testData {
 	task5ID := createTask(t, db, teamID, ownerID, &assignee2ID, model.TaskStatusDone, "Task 5")
 	task6ID := createTask(t, db, teamID, adminID, &assignee1ID, model.TaskStatusDone, "Task 6")
 
-	// Update closed_at for done tasks
-	updateClosedAt(t, db, task4ID, time.Now().Add(-48*time.Hour))
-	updateClosedAt(t, db, task5ID, time.Now().Add(-24*time.Hour))
-	updateClosedAt(t, db, task6ID, time.Now().Add(-12*time.Hour))
+	// Update created_at + closed_at for done tasks so closed_at > created_at.
+	// created_at must be before closed_at for TIMESTAMPDIFF to produce a positive value.
+	setTaskTimes(t, db, task4ID, time.Now().Add(-72*time.Hour), time.Now().Add(-48*time.Hour)) // open 24h
+	setTaskTimes(t, db, task5ID, time.Now().Add(-48*time.Hour), time.Now().Add(-24*time.Hour)) // open 24h
+	setTaskTimes(t, db, task6ID, time.Now().Add(-36*time.Hour), time.Now().Add(-12*time.Hour)) // open 24h
 
 	// Create comments
 	createComment(t, db, task1ID, ownerID, "Comment 1")
@@ -241,11 +242,12 @@ func createTask(t *testing.T, db *sql.DB, teamID, createdBy int64, assigneeID *i
 	return id
 }
 
-func updateClosedAt(t *testing.T, db *sql.DB, taskID int64, closedAt time.Time) {
-	query := `UPDATE tasks SET closed_at = ? WHERE id = ?`
-	_, err := db.Exec(query, closedAt, taskID)
+func setTaskTimes(t *testing.T, db *sql.DB, taskID int64, createdAt, closedAt time.Time) {
+	t.Helper()
+	query := `UPDATE tasks SET created_at = ?, closed_at = ? WHERE id = ?`
+	_, err := db.Exec(query, createdAt, closedAt, taskID)
 	if err != nil {
-		t.Fatalf("Failed to update closed_at: %v", err)
+		t.Fatalf("Failed to update task times: %v", err)
 	}
 }
 

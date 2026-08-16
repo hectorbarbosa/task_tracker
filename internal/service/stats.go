@@ -5,17 +5,16 @@ import (
 	"errors"
 
 	"task_tracker/internal/model"
-	"task_tracker/internal/repository"
 )
 
 // StatsService handles team analytics.
 type StatsService struct {
-	statsRepo *repository.StatsRepository
-	teamRepo  *repository.TeamRepository
+	statsRepo statsStore
+	teamRepo  teamStore
 }
 
 // NewStatsService creates a new StatsService.
-func NewStatsService(statsRepo *repository.StatsRepository, teamRepo *repository.TeamRepository) *StatsService {
+func NewStatsService(statsRepo statsStore, teamRepo teamStore) *StatsService {
 	return &StatsService{
 		statsRepo: statsRepo,
 		teamRepo:  teamRepo,

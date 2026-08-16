@@ -8,21 +8,20 @@ import (
 
 	"task_tracker/internal/middleware"
 	"task_tracker/internal/model"
-	"task_tracker/internal/repository"
 )
 
 // AuthService handles user registration and authentication.
 type AuthService struct {
-	userRepo          *repository.UserRepository
-	jwtSecret         string
+	userRepo           userStore
+	jwtSecret          string
 	jwtExpirationHours int
 }
 
 // NewAuthService creates a new AuthService.
-func NewAuthService(userRepo *repository.UserRepository, jwtSecret string, jwtExpirationHours int) *AuthService {
+func NewAuthService(userRepo userStore, jwtSecret string, jwtExpirationHours int) *AuthService {
 	return &AuthService{
-		userRepo:          userRepo,
-		jwtSecret:         jwtSecret,
+		userRepo:           userRepo,
+		jwtSecret:          jwtSecret,
 		jwtExpirationHours: jwtExpirationHours,
 	}
 }

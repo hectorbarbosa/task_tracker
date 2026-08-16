@@ -5,21 +5,20 @@ import (
 	"errors"
 
 	"task_tracker/internal/model"
-	"task_tracker/internal/repository"
 )
 
 // CommentService handles task comments.
 type CommentService struct {
-	commentRepo *repository.CommentRepository
-	taskRepo    *repository.TaskRepository
-	teamRepo    *repository.TeamRepository
+	commentRepo commentStore
+	taskRepo    taskStore
+	teamRepo    teamStore
 }
 
 // NewCommentService creates a new CommentService.
 func NewCommentService(
-	commentRepo *repository.CommentRepository,
-	taskRepo *repository.TaskRepository,
-	teamRepo *repository.TeamRepository,
+	commentRepo commentStore,
+	taskRepo taskStore,
+	teamRepo teamStore,
 ) *CommentService {
 	return &CommentService{
 		commentRepo: commentRepo,
