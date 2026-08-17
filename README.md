@@ -3,8 +3,6 @@
 REST API сервис для командной разработки (трекер задач) с ролевым доступом, 
 историей изменений, Redis-кэшем и аналитическим SQL отчетом.
 
-See `document.pdf` for the full specification.
-
 ## Tech stack
 
 - **Language**: Go 1.25
@@ -15,6 +13,7 @@ See `document.pdf` for the full specification.
 - **Auth**: JWT (golang-jwt/jwt/v5 — to be wired in `internal/middleware/auth.go`)
 - **Docs**: Swagger / OpenAPI via [swaggo](https://github.com/swaggo/swag)
 - **Runtime**: Docker + Docker Compose
+- Тестировалось на Ubuntu 24
 
 ## Project layout
 
@@ -34,7 +33,7 @@ docker-compose.yml        Full stack (api + mysql + redis) — for delivery
 docker-compose.dev.yml    Infra only (mysql + redis) — for local dev
 ```
 
-## Quick start (local development)
+## Быстрый старт (локальная разработка)
 
 Рекомендованный воркфлоу для разработки: запустите MySQL + Redis в Докере, запустите Go app 
 локально. 
@@ -66,7 +65,7 @@ make swagger
 
 Для деливери/ревью. Все работает из Docker-контейнеров: API + MySQL + Redis.
 
-### Step-by-step
+### Запуск сервиса в Docker-контейнере 
 
 ```bash
 # 1. Build and start all services (migrations run automatically)
@@ -101,7 +100,7 @@ docker compose down
 docker compose down -v
 ```
 
-### Viewing logs
+### Просмотр логов 
 
 ```bash
 docker compose logs -f          # all services
@@ -109,7 +108,7 @@ docker compose logs -f api      # API only
 docker compose logs -f mysql    # MySQL only
 ```
 
-### Notes
+### Дополнительная информация 
 
 - `api` waits for `mysql` and `redis` to be healthy before starting
 - Database data persists across restarts (stored in named volumes)
@@ -133,28 +132,50 @@ make docker-migrate-up   # apply inside docker compose
 make docker-migrate-down # rollback inside docker compose
 ```
 
-Файлы миграции находятся в `migrations/`, использование
-[golang-migrate naming](https://github.com/golang-migrate/migrate#migration-files):
-`{version}_{name}.up.sql` / `{version}_{name}.down.sql`.
+Файлы миграции находятся в `migrations/`
 
 ## Configuration
 
-Весь конфиг считывается из переменных окружения. Смотри в `.env.example` полный
-список плюс дефолтные значения. Локально, приложение берет `.env` при запуске, 
-скопируй из файла `.env.example` и поменяй значения, как нужно.
+Весь конфиг считывается из переменных окружения. Смотри в `.env.example` полный список плюс дефолтные значения.
 
-Key variables:
+### Local development
+
+Локально, приложение берет `.env` при запуске. Скопируй из файла `.env.example` и поменяй значения, как нужно:
+
+```bash
+cp .env.example .env
+# Edit .env as needed
+```
+
+### Full stack (Docker)
+
+В Docker-контейнере конфигурация задается в `docker-compose.yml` в секции `environment`. Ключевые отличия от локальной разработки:
+
+- `DB_HOST=mysql` (имя сервиса в docker-compose, не `127.0.0.1`)
+- `REDIS_HOST=redis` (имя сервиса в docker-compose)
+- `APP_ENV=production`
+
+Для изменения значений создайте `.env` файл в корне проекта — docker-compose автоматически прочитает его:
+
+```bash
+cp .env.example .env
+# Edit .env, then restart:
+docker compose down
+docker compose up --build
+```
+
+### Key variables
 
 | Variable | Default | Description |
 |---|---|---|
 | `APP_PORT` | `8080` | HTTP port |
 | `APP_ENV` | `development` | `development` or `production` (controls Gin mode) |
-| `DB_HOST` | `127.0.0.1` | MySQL host |
+| `DB_HOST` | `127.0.0.1` | MySQL host (`mysql` in Docker) |
 | `DB_PORT` | `3306` | MySQL port |
 | `DB_USER` | `task_user` | MySQL user |
 | `DB_PASS` | `task_pass` | MySQL password |
 | `DB_NAME` | `task_tracker` | MySQL database |
-| `REDIS_HOST` | `127.0.0.1` | Redis host |
+| `REDIS_HOST` | `127.0.0.1` | Redis host (`redis` in Docker) |
 | `REDIS_PORT` | `6379` | Redis port |
 | `JWT_SECRET` | `dev-secret-change-me` | **Change in production** |
 | `JWT_EXPIRATION_HOURS` | `24` | Token lifetime |
