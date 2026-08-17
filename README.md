@@ -36,7 +36,7 @@ docker-compose.dev.yml    Infra only (mysql + redis) — for local dev
 
 ## Quick start (local development)
 
-Рекомендованный воркфлоу: запустите MySQL + Redis в Докере, запустите Go app 
+Рекомендованный воркфлоу для разработки: запустите MySQL + Redis в Докере, запустите Go app 
 локально. 
 
 ```bash
@@ -64,22 +64,73 @@ make swagger
 
 ## Full stack (Docker)
 
-Для финального деливери / ревью:
+Для деливери/ревью. Все работает из Docker-контейнеров: API + MySQL + Redis.
+
+### Step-by-step
 
 ```bash
-docker compose up --build       # or: make docker-up
-docker compose down             # or: make docker-down
+# 1. Build and start all services (migrations run automatically)
+docker compose up --build
+
+# 2. Verify services are running
+docker compose ps
+
+# 3. Check API health
+curl http://localhost:8080/health
 ```
-`api` контейнер перед запуском ждет стартовавших `mysql` и `redis`.
+
+API будет доступно на URL: http://localhost:8080
+
+**Swagger UI** (interactive API documentation with testing):
+```
+http://localhost:8080/swagger/index.html
+```
+
+Database migrations run automatically on startup. Check logs to see migration output:
+```bash
+docker compose logs api
+```
+
+### Stopping services
+
+```bash
+# Stop containers (data persists in volumes)
+docker compose down
+
+# Stop and delete all data (WARNING: loses database)
+docker compose down -v
+```
+
+### Viewing logs
+
+```bash
+docker compose logs -f          # all services
+docker compose logs -f api      # API only
+docker compose logs -f mysql    # MySQL only
+```
+
+### Notes
+
+- `api` waits for `mysql` and `redis` to be healthy before starting
+- Database data persists across restarts (stored in named volumes)
+- Rebuild with `--build` flag after code changes
+- Run `make swagger` locally before rebuilding to update API docs
 
 ## Migrations
 
+**Full stack (Docker):** Migrations run automatically on container startup.
+
+**Local development:**
 ```bash
 make migrate-up          # apply against local MySQL
 make migrate-down        # rollback one step
 make migrate-fix         # force schema version (recover from broken state)
+```
 
-make docker-migrate-up   # apply inside docker compose (full stack)
+**Manual Docker migrations** (if needed):
+```bash
+make docker-migrate-up   # apply inside docker compose
+make docker-migrate-down # rollback inside docker compose
 ```
 
 Файлы миграции находятся в `migrations/`, использование

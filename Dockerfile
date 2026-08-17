@@ -25,7 +25,9 @@ RUN apk add --no-cache ca-certificates tzdata
 COPY --from=builder /build/task_tracker /usr/local/bin/task_tracker
 COPY --from=migrate-builder /go/bin/migrate /usr/local/bin/migrate
 COPY migrations /migrations
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8080
 
-ENTRYPOINT ["task_tracker"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["task_tracker"]
