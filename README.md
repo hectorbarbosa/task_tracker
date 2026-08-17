@@ -214,6 +214,18 @@ make test-integration         # integration tests (обязательный ин
 make test-access              # unit access rights (опциональный тест прав доступа)  
 ```
 
+## Enum Values
+
+**Task Status** (`status` field):
+- `todo` — not started
+- `in_progress` — work in progress
+- `done` — completed
+
+**Team Role** (`role` field):
+- `owner` — team creator, full access
+- `admin` — can invite users and edit any task
+- `member` — can create tasks, edit own/assigned tasks
+
 ## API Usage Examples
 
 ### Authentication
