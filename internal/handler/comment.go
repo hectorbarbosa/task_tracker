@@ -29,7 +29,7 @@ func NewCommentHandler(commentService *service.CommentService) *CommentHandler {
 // @Param        input body model.CreateCommentInput true "comment data"
 // @Success      201 {object} model.TaskComment
 // @Security     BearerAuth
-// @Router       /api/v1/tasks/{id}/comments [post]
+// @Router       /tasks/{id}/comments [post]
 func (h *CommentHandler) Create(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {
@@ -64,7 +64,7 @@ func (h *CommentHandler) Create(c *gin.Context) {
 // @Param        id path int true "task id"
 // @Success      200 {array} model.TaskComment
 // @Security     BearerAuth
-// @Router       /api/v1/tasks/{id}/comments [get]
+// @Router       /tasks/{id}/comments [get]
 func (h *CommentHandler) List(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {

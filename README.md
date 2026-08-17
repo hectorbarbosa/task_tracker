@@ -7,7 +7,7 @@ See `document.pdf` for the full specification.
 
 ## Tech stack
 
-- **Language**: Go 1.23
+- **Language**: Go 1.25
 - **HTTP**: [Gin](https://github.com/gin-gonic/gin)
 - **Database**: MySQL 8.0
 - **Cache**: Redis 7
@@ -52,6 +52,16 @@ make run
 
 API будет доступно на URL: http://localhost:8080. Health check: `GET /health`.
 
+**Swagger UI** (API documentation):
+```
+http://localhost:8080/swagger/index.html
+```
+
+Regenerate docs after handler changes:
+```bash
+make swagger
+```
+
 ## Full stack (Docker)
 
 Для финального деливери / ревью:
@@ -75,16 +85,6 @@ make docker-migrate-up   # apply inside docker compose (full stack)
 Файлы миграции находятся в `migrations/`, использование
 [golang-migrate naming](https://github.com/golang-migrate/migrate#migration-files):
 `{version}_{name}.up.sql` / `{version}_{name}.down.sql`.
-
-## Swagger
-
-```bash
-make swagger             # regenerates docs/swagger/*
-```
-
-Handlers are annotated with `godoc` comments — see `internal/handler/*.go`.
-After generation, mount the UI at `/swagger/*any` (wiring is marked `TODO`
-in `internal/server/server.go`).
 
 ## Configuration
 
@@ -340,16 +340,4 @@ Response:
   "avg_close_seconds": 259200.5,
   "total_comments": 47
 }
-```
-
-## Swagger UI
-
-API документация доступна: 
-```
-http://localhost:8080/swagger/index.html
-```
-
-Генерировать Swagger-документацию
-```bash
-make swagger
 ```

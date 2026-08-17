@@ -69,11 +69,11 @@ migrate-fix:
 # ─── Migrations (MySQL inside docker compose) ────────────────────────────────
 .PHONY: docker-migrate-up
 docker-migrate-up:
-	docker compose run --rm api migrate -path /api/migrations -database "mysql://$(DOCKER_DSN)?multiStatements=true" up
+	docker compose run --rm --entrypoint migrate api -path /migrations -database "mysql://$(DOCKER_DSN)?multiStatements=true" up
 
 .PHONY: docker-migrate-down
 docker-migrate-down:
-	docker compose run --rm api migrate -path /api/migrations -database "mysql://$(DOCKER_DSN)?multiStatements=true" down
+	docker compose run --rm --entrypoint migrate api -path /migrations -database "mysql://$(DOCKER_DSN)?multiStatements=true" down
 
 # ─── Local dev workflow ───────────────────────────────────────────────────────
 # Spin up MySQL + Redis only (no api container). Run the Go app natively so
@@ -109,7 +109,7 @@ docker-logs:
 # Requires: go install github.com/swaggo/swag/cmd/swag@latest
 .PHONY: swagger
 swagger:
-	swag init -d ./cmd/api,./internal --parseDependency --parseInternal -o ./docs/swagger
+	swag init -d ./cmd/api,./internal/handler --parseDependency --parseInternal -o ./docs/swagger
 
 # ─── Lint ─────────────────────────────────────────────────────────────────────
 # Requires: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest

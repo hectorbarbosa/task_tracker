@@ -29,7 +29,7 @@ func NewStatsHandler(statsService *service.StatsService) *StatsHandler {
 // @Success      200 {object} model.TeamStats
 // @Failure      403 {object} object{error=string}
 // @Security     BearerAuth
-// @Router       /api/v1/teams/{team_id}/stats [get]
+// @Router       /teams/{team_id}/stats [get]
 func (h *StatsHandler) Get(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {

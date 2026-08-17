@@ -27,7 +27,7 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 // @Param        input body model.RegisterInput true "registration data"
 // @Success      201 {object} model.TokenResponse
 // @Failure      400 {object} object{error=string}
-// @Router       /api/v1/register [post]
+// @Router       /register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input model.RegisterInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -54,7 +54,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Success      200 {object} model.TokenResponse
 // @Failure      400 {object} object{error=string}
 // @Failure      401 {object} object{error=string}
-// @Router       /api/v1/login [post]
+// @Router       /login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var input model.LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {

@@ -29,7 +29,7 @@ func NewTaskHandler(taskService *service.TaskService) *TaskHandler {
 // @Success      201 {object} model.Task
 // @Failure      400 {object} object{error=string}
 // @Security     BearerAuth
-// @Router       /api/v1/tasks [post]
+// @Router       /tasks [post]
 func (h *TaskHandler) Create(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {
@@ -62,7 +62,7 @@ func (h *TaskHandler) Create(c *gin.Context) {
 // @Param        offset      query int    false "offset"
 // @Success      200 {array} model.Task
 // @Security     BearerAuth
-// @Router       /api/v1/tasks [get]
+// @Router       /tasks [get]
 func (h *TaskHandler) List(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {
@@ -99,7 +99,7 @@ func (h *TaskHandler) List(c *gin.Context) {
 // @Failure      403 {object} object{error=string}
 // @Failure      409 {object} object{error=string}
 // @Security     BearerAuth
-// @Router       /api/v1/tasks/{id} [put]
+// @Router       /tasks/{id} [put]
 func (h *TaskHandler) Update(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {
@@ -142,7 +142,7 @@ func (h *TaskHandler) Update(c *gin.Context) {
 // @Param        id path int true "task id"
 // @Success      200 {array} model.TaskHistory
 // @Security     BearerAuth
-// @Router       /api/v1/tasks/{id}/history [get]
+// @Router       /tasks/{id}/history [get]
 func (h *TaskHandler) History(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {

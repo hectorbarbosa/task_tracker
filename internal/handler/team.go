@@ -29,7 +29,7 @@ func NewTeamHandler(teamService *service.TeamService) *TeamHandler {
 // @Success      201 {object} model.Team
 // @Failure      400 {object} object{error=string}
 // @Security     BearerAuth
-// @Router       /api/v1/teams [post]
+// @Router       /teams [post]
 func (h *TeamHandler) CreateTeam(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {
@@ -57,7 +57,7 @@ func (h *TeamHandler) CreateTeam(c *gin.Context) {
 // @Produce      json
 // @Success      200 {array} model.Team
 // @Security     BearerAuth
-// @Router       /api/v1/teams [get]
+// @Router       /teams [get]
 func (h *TeamHandler) ListTeams(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {
@@ -87,7 +87,7 @@ func (h *TeamHandler) ListTeams(c *gin.Context) {
 // @Success      200 {object} model.TeamMember
 // @Failure      403 {object} object{error=string}
 // @Security     BearerAuth
-// @Router       /api/v1/teams/{id}/invite [post]
+// @Router       /teams/{id}/invite [post]
 func (h *TeamHandler) Invite(c *gin.Context) {
 	userID, ok := middleware.CurrentUserID(c)
 	if !ok {
