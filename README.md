@@ -3,6 +3,26 @@
 REST API сервис для командной разработки (трекер задач) с ролевым доступом, 
 историей изменений, Redis-кэшем и аналитическим SQL отчетом.
 
+## Реализованные функции
+
+**Обязательные требования:**
+- [x] API покрывает аутентификацию, команды, задачи, комментарии, историю и аналитику
+- [x] Права доступа реализованы на уровне бизнес-логики (подтверждено 33 юнит-тестами)
+- [x] Нет утечки данных между командами
+- [x] Транзакции для создания/обновления задач и записи истории
+- [x] Защита от одновременного обновления задач (optimistic locking)
+- [x] Redis кэш для списков задач с корректной инвалидацией
+- [x] Swagger/OpenAPI документация
+- [x] Понятный README
+- [x] Запуск через Docker Compose
+
+**Дополнительные улучшения:**
+- [x] Юнит-тесты для бизнес-логики прав доступа
+- [x] Ограничение частоты запросов (rate limiting)
+- [x] Структурированное логирование
+- [ ] Пагинация на основе курсора
+- [ ] Circuit breaker (предохранитель)
+
 ## Tech stack
 
 - **Language**: Go 1.25
@@ -56,7 +76,7 @@ API будет доступно на URL: http://localhost:8080. Health check: `
 http://localhost:8080/swagger/index.html
 ```
 
-Regenerate docs after handler changes:
+Генерировать swagger docs:
 ```bash
 make swagger
 ```
@@ -67,6 +87,10 @@ make swagger
 
 ### Запуск сервиса в Docker-контейнере 
 
+**Note:** If you changed handler annotations, regenerate swagger docs first:
+```bash
+make swagger
+```
 ```bash
 # 1. Build and start all services (migrations run automatically)
 docker compose up --build
@@ -78,8 +102,10 @@ docker compose ps
 curl http://localhost:8080/health
 ```
 
-API будет доступно на URL: http://localhost:8080
-
+API будет доступно на URL: 
+```
+http://localhost:8080
+```
 **Swagger UI** (interactive API documentation with testing):
 ```
 http://localhost:8080/swagger/index.html
@@ -138,7 +164,7 @@ make docker-migrate-down # rollback inside docker compose
 
 Весь конфиг считывается из переменных окружения. Смотри в `.env.example` полный список плюс дефолтные значения.
 
-### Local development
+### Конфиг для Local development
 
 Локально, приложение берет `.env` при запуске. Скопируй из файла `.env.example` и поменяй значения, как нужно:
 
@@ -147,7 +173,7 @@ cp .env.example .env
 # Edit .env as needed
 ```
 
-### Full stack (Docker)
+### Конфиг для Full stack (Docker)
 
 В Docker-контейнере конфигурация задается в `docker-compose.yml` в секции `environment`. Ключевые отличия от локальной разработки:
 
